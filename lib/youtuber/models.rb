@@ -1,6 +1,6 @@
 module Youtuber
   module Models
-  
+    
     def self.config(mod, *accessors) #:nodoc:
       class << mod; attr_accessor :available_configs; end
       mod.available_configs = accessors
@@ -23,6 +23,8 @@ module Youtuber
         METHOD
       end
     end
+    
+    
     
     def youtuber(*modules)
       options = modules.extract_options!.dup
@@ -63,6 +65,17 @@ module Youtuber
     def youtuber_modules_hook!
       yield
     end
+    
+    module InstanceMethods
+      
+      def set_instance_variables( variables )
+        variables.each do |key, value|
+          name = key.to_s
+          instance_variable_set("@#{name}", value) if respond_to?(name)
+        end
+      end
+    end
+    
     
   end
 end

@@ -8,11 +8,15 @@ module Youtuber
     def self.setup
       yield self
     end
-
+    
+    def self.esc(s) #:nodoc:
+       CGI.escape(s.to_s)
+    end
 end
 
 #Require our engine
 require "youtuber/engine"
+require "youtuber/models"
 
-require 'orm_adapter/adapters/active_record'
-ActiveRecord::Base.extend Devise::Models
+ActiveRecord::Base.extend Youtuber::Models
+ActiveRecord::Base.send :include, Youtuber::Models.const_get("InstanceMethods")

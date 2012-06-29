@@ -1,4 +1,7 @@
 require "active_support/dependencies"
+require 'open-uri'
+require 'digest/md5'
+require 'nokogiri'
 
 module Youtuber
   

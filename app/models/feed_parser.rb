@@ -1,6 +1,8 @@
 module Youtuber
   class FeedParser
     
+    attr_reader :entries
+    
     def initialize(feed)
       @content = (feed =~ URI::regexp(%w(http https)) ? open(feed).read : false)
     rescue OpenURI::HTTPError => e
@@ -21,9 +23,9 @@ module Youtuber
       uploaded_at = video.at_xpath("media:group/yt:uploaded") ? Time.parse(video.at_xpath("media:group/yt:uploaded").text) : nil
       updated_at = video.at("updated") ? Time.parse(video.at("updated").text) : nil
 
-      title = entry.at("title").text
+      title = video.at("title").text
      
-      media_group = entry.at_xpath('media:group')
+      media_group = video.at_xpath('media:group')
       ytid = nil
       unless media_group.at_xpath("yt:videoid").nil?
         ytid = media_group.at_xpath("yt:videoid").text
@@ -52,13 +54,13 @@ module Youtuber
 
       media_content = []
       media_group.xpath("media:content").each do |mce|
-        media_content << parse_media_content(mce)
+        #media_content << parse_media_content(mce)
       end
 
-      noembed     = entry.at_xpath("yt:noembed") ? true : false
+      noembed     = video.at_xpath("yt:noembed") ? true : false
 
-      if entry.namespaces['xmlns:app']
-        control = entry.at_xpath("app:control")
+      if video.namespaces['xmlns:app']
+        control = video.at_xpath("app:control")
         state = { :name => "published" }
         if control && control.at_xpath("yt:state")
           state = {
@@ -70,52 +72,32 @@ module Youtuber
         end
       end
 
-      insight_uri = (entry.at_xpath('xmlns:link[@rel="http://gdata.youtube.com/schemas/2007#insight.views"]')['href'] rescue nil)
+      is_private = media_group.at_xpath("yt:private") ? true : false
 
-      perm_private = media_group.at_xpath("yt:private") ? true : false
-
-      YouTubeIt::Model::Video.new(
+      video = {
         :video_id       => video_id,
         :published_at   => published_at,
         :updated_at     => updated_at,
         :uploaded_at    => uploaded_at,
-        :categories     => categories,
-        :keywords       => keywords,
-        :title          => title,
-        :html_content   => html_content,
-        :author         => author,
+        
         :description    => description,
         :duration       => duration,
-        :media_content  => media_content,
         :player_url     => player_url,
-        :thumbnails     => thumbnails,
-        :rating         => rating,
-        :view_count     => view_count,
-        :favorite_count => favorite_count,
-        :comment_count  => comment_count,
-        :access_control => access_control,
         :widescreen     => widescreen,
         :noembed        => noembed,
-        :safe_search    => safe_search,
-        :position       => position,
-        :latitude       => latitude,
-        :longitude      => longitude,
         :state          => state,
-        :insight_uri    => insight_uri,
-        :unique_id      => ytid,
-        :perm_private   => perm_private)
-    end
-      
+        :ytid      => ytid,
+        :is_private   => is_private}
     end
     
     def parse_content content
       entries = []
       doc  = Nokogiri::XML(content)
-      doc.xpath("//entry").each do |entry|
+      doc.css("entry").each do |entry|
         entries << entry
       end
-    
-      if doc.at('feed') && entries.length > 1
+      feed = doc.at('feed')
+      if feed && entries.length > 1
         feed_id            = feed.at("id").text
         updated_at         = Time.parse(feed.at("updated").text)
         total_result_count = feed.at_xpath("openSearch:totalResults").text.to_i

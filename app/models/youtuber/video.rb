@@ -1,6 +1,6 @@
 module Youtuber
-  class Video
-    
+  class Video < ActiveRecord::Base
+    set_table_name "yt_videos"
     belongs_to :videoable, :polymorphic => true
     
     attr_reader :video_id, :title, :ytid, :description, :duration, :player_url, :widescreen, :noembed, :state,:is_private

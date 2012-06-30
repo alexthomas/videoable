@@ -21,5 +21,6 @@ end
 require "youtuber/engine"
 require "youtuber/models"
 
+
 ActiveRecord::Base.extend Youtuber::Models
 ActiveRecord::Base.send :include, Youtuber::Models.const_get("InstanceMethods")

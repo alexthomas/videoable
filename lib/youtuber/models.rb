@@ -29,7 +29,7 @@ module Youtuber
     def youtuber(*modules)
       options = modules.extract_options!.dup
       
-      
+      logger.debug "in youtuber options are #{options.inspect} modules are #{modules} #{__LINE__}"
       selected_modules = modules.map(&:to_sym).uniq
       #selected_modules = modules.map(&:to_sym).uniq.sort_by do |s|
       #  Youtuber::ALL.index(s) || -1  # follow Youtuber::ALL order
@@ -47,8 +47,8 @@ module Youtuber
             if class_mod.respond_to?(:available_configs)
               available_configs = class_mod.available_configs
               available_configs.each do |config|
-                next unless options.key?(config)
-                send(:"#{config}=", options.delete(config))
+                #next unless options.key?(config)
+                #send(:"#{config}=", options.delete(config))
               end
             end
           end

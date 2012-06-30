@@ -6,7 +6,7 @@ module Youtuber
   module Generators
     class InstallGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
-      include Rails::Generators::ActiveRecord
+      #include Rails::Generators::ActiveRecord
       
       source_root File.expand_path("../../templates", __FILE__)
 
@@ -29,7 +29,7 @@ module Youtuber
       end
       
       def generate_model
-        invoke "active_record:model", ["Video"], :migration => false unless model_exists? && behavior == :invoke
+        #invoke "active_record:model", ["Video"], :migration => false unless model_exists? && behavior == :invoke
       end
     end
   end

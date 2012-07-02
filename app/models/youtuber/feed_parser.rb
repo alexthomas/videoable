@@ -1,7 +1,7 @@
 module Youtuber
   class FeedParser
     
-    attr_reader :entries
+    attr_reader :response
     
     def initialize(feed)
       @content = (feed =~ URI::regexp(%w(http https)) ? open(feed).read : false)
@@ -13,7 +13,8 @@ module Youtuber
     end  
 
     def parse
-      @entries = (@content) ? parse_content(@content) : false
+      @response = (@content) ? parse_content(@content) : false
+      Rails.logger.debug "response: #{@response.inspect}"
       yield self
     end
   
@@ -24,13 +25,14 @@ module Youtuber
       updated_at = video.at("updated") ? Time.parse(video.at("updated").text) : nil
 
       title = video.at("title").text
-     
+     Rails.logger.debug "title = #{title}"
       media_group = video.at_xpath('media:group')
       ytid = nil
       unless media_group.at_xpath("yt:videoid").nil?
         ytid = media_group.at_xpath("yt:videoid").text
       end
-
+      
+      ytid ||= Video.ytid_from_video_id(video_id)
       # if content is not available on certain region, there is no media:description, media:player or yt:duration
       description = ""
       unless media_group.at_xpath("media:description").nil?
@@ -74,20 +76,20 @@ module Youtuber
 
       is_private = media_group.at_xpath("yt:private") ? true : false
 
-      video = {
+      Youtuber::Video.new(
         :video_id       => video_id,
         :published_at   => published_at,
         :updated_at     => updated_at,
         :uploaded_at    => uploaded_at,
         
+        :title          => title,
         :description    => description,
         :duration       => duration,
         :player_url     => player_url,
         :widescreen     => widescreen,
         :noembed        => noembed,
-        :state          => state,
         :ytid      => ytid,
-        :is_private   => is_private}
+        :is_private   => is_private)
     end
     
     def parse_content content
@@ -102,9 +104,16 @@ module Youtuber
         updated_at         = Time.parse(feed.at("updated").text)
         total_result_count = feed.at_xpath("openSearch:totalResults").text.to_i
         offset             = feed.at_xpath("openSearch:startIndex").text.to_i
-        max_result_count   = feed.at_xpath("openSearch:itemsPerPage").text.to_i
+        items_per_page   = feed.at_xpath("openSearch:itemsPerPage").text.to_i
       end
-      entries
+      
+      Youtuber::Response.new(
+        :feed_id            => feed_id || nil,
+        :updated_at         => updated_at || nil,
+        :total_result_count => total_result_count || nil,
+        :offset             => offset || nil,
+        :items_per_page   => items_per_page || nil,
+        :entries             => entries)
     end
   
     def have_content?

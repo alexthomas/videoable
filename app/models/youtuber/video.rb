@@ -1,14 +1,23 @@
 module Youtuber
   class Video < ActiveRecord::Base
+    include Youtuber::Models.const_get("InstanceMethods")
     set_table_name "yt_videos"
     belongs_to :videoable, :polymorphic => true
     
-    attr_reader :video_id, :title, :ytid, :description, :duration, :player_url, :widescreen, :noembed, :state,:is_private
-    
-    def self.video_exists?(vid,host)
-      find_by_video_id_and_host(vid,host)
+    attr_accessible :video_id, :title, :ytid, :description, :duration, :player_url, 
+                  :widescreen, :noembed, :state,:is_private,:published_at,:uploaded_at,:updated_at
+
+                  
+    def self.video_exists?(vid)
+      find_by_video_id(vid)
     end
     
+    def self.ytid_from_video_id video_id
+      logger.debug "video id is: #{video_id}"
+      logger.debug "unique id is: #{video_id[/videos\/([^<]+)/, 1]}"
+      video_id[/videos\/([^<]+)/, 1] || video_id[/video\:([^<]+)/, 1]
+    end
+
     def embeddable?
       not @noembed
     end

@@ -7,10 +7,11 @@ module Youtuber
     STD_FEEDS = [ :top_rated, :top_favorites, :most_viewed, :most_popular,
               :most_recent, :most_discussed, :most_linked, :most_responded,
               :recently_featured, :watch_on_mobile ]
-    attr_reader :url, :max_results, :offset, :time
-  
+              
+    attr_reader :feed_id,:url,:updated_at,:total_result_count,:offset,:items_per_page
+    
     def initialize(*params)
-      set_instance_variables(params)
+      set_instance_variables(*params)
     end
     
     def self.add_feed(params, options={})
@@ -18,6 +19,11 @@ module Youtuber
       @@feeds <<  "Youtuber::Feeds::#{tof}".constantize.new(params)
     end
     
+    def self.parse_feeds
+      @@feeds.each do | feed |
+        feed.parse
+      end
+    end
     
     def base_url
       "http://gdata.youtube.com/feeds/api/"
@@ -25,6 +31,16 @@ module Youtuber
     
     def build_query_params(params)
       qs = params.to_a.map { | k, v | v.nil? ? nil : "#{Youtuber.esc(k)}=#{Youtuber.esc(v)}" }.compact.sort.join('&')
+      "?#{qs}"
+    end
+    
+    def to_youtube_params
+      {
+        'max-results' => @max_results,
+        'orderby' => @order_by,
+        'start-index' => @offset,
+        'v' => 2
+      }
     end
     
     private

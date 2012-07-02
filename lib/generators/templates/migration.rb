@@ -10,6 +10,9 @@ class CreateYoutuberVideoTable < ActiveRecord::Migration
       t.boolean :widescreen
       t.boolean :noembed
       t.boolean :is_private
+      t.datetime :published_at
+      t.datetime :updated_at
+      t.datetime :uploaded_at
       t.timestamps
     end
   end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120630143437) do
+ActiveRecord::Schema.define(:version => 20120630172038) do
 
   create_table "yt_videos", :force => true do |t|
     t.string   "video_id"
@@ -23,8 +23,10 @@ ActiveRecord::Schema.define(:version => 20120630143437) do
     t.boolean  "widescreen"
     t.boolean  "noembed"
     t.boolean  "is_private"
-    t.datetime "created_at"
+    t.datetime "published_at"
     t.datetime "updated_at"
+    t.datetime "uploaded_at"
+    t.datetime "created_at"
   end
 
 end

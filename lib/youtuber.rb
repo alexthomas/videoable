@@ -20,6 +20,7 @@ end
 #Require our engine
 require "youtuber/engine"
 require "youtuber/models"
+require "youtuber/feeds"
 
 
 ActiveRecord::Base.extend Youtuber::Models

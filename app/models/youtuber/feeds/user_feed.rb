@@ -27,7 +27,7 @@ module Youtuber
           @items_per_page ||= parser.response.items_per_page
           parser.response.entries.each do | entry |
             videos << parser.parse_video(entry)
-            
+
             if Youtuber::Video.video_exists?(videos.last.video_id)
               end_parse = true
               break
@@ -42,6 +42,28 @@ module Youtuber
         videos
       end
                 
+    end
+    
+    def self.perform(url)
+      end_parse = false
+      fp = Youtuber::FeedParser.new @url
+      fp.parse do | parser |
+        @offset = parser.response.offset
+        @items_per_page ||= parser.response.items_per_page
+        parser.response.entries.each do | entry |
+          videos << parser.parse_video(entry)
+          
+          if Youtuber::Video.video_exists?(videos.last.video_id)
+            end_parse = true
+            break
+          end
+          videos.last.save!    
+        end
+        end_parse = parser.response.next_page.nil? 
+        if !end_parse
+          Rails.logger.debug "we have a next page and its offset will be #{@offset + @items_per_page}"
+        end
+      end
     end
     
   end

@@ -1,4 +1,2 @@
-# desc "Explaining what the task does"
-# task :youtuber do
-#   # Task goes here
-# end
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../../lib'
+require 'youtuber/tasks'

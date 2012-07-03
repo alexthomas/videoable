@@ -1,17 +1,19 @@
 module Youtuber
   class FeedParser
-    
     attr_reader :response
+    
+    @queue = :feed_queue
     
     def initialize(feed)
       @content = (feed =~ URI::regexp(%w(http https)) ? open(feed).read : false)
     rescue OpenURI::HTTPError => e
       raise OpenURI::HTTPError.new(e.io.status[0],e)
     rescue
-      @content = false
-      
+      @content = false  
     end  
 
+    
+    
     def parse
       @response = (@content) ? parse_content(@content) : false
       Rails.logger.debug "response: #{@response.inspect}"

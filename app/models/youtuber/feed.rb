@@ -21,7 +21,9 @@ module Youtuber
     
     def self.parse_feeds
       @@feeds.each do | feed |
+        Rails.logger.debug "lib file: #{File.dirname(__FILE__) + '/../../lib'}"
         feed.parse
+        #Resque.enqueue(feed.class, @feed.url)
       end
     end
     
@@ -36,7 +38,7 @@ module Youtuber
     
     def to_youtube_params
       {
-        'max-results' => @max_results,
+        'max-results' => @items_per_page,
         'orderby' => @order_by,
         'start-index' => @offset,
         'v' => 2

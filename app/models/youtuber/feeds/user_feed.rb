@@ -2,7 +2,12 @@ module Youtuber
   module Feeds
     class UserFeed < Feed
       
+      @queue = :user_feed_queue
+      
+      attr_reader :user
+      
       def initialize(params,options = {})
+        super params
         @url = base_url
         @url << "#{params[:user]}/"
         
@@ -10,7 +15,7 @@ module Youtuber
         @url << user_playlist
         @url << build_query_params(to_youtube_params)
         Rails.logger.debug "feed url: #{@url}"
-        super params
+        
         
       end
       
@@ -19,12 +24,18 @@ module Youtuber
       end
       
       def parse
+         
+      end
+      
+      def self.enqueue_feed feed
+        Resque.enqueue(feed.class, feed.user,feed.url)
+      end
+      
+      def self.perform(user,url)
         videos = []
         end_parse = false
-        fp = Youtuber::FeedParser.new @url
+        fp = Youtuber::FeedParser.new url
         fp.parse do | parser |
-          @offset = parser.response.offset
-          @items_per_page ||= parser.response.items_per_page
           parser.response.entries.each do | entry |
             videos << parser.parse_video(entry)
 
@@ -36,36 +47,15 @@ module Youtuber
           end
           end_parse = parser.response.next_page.nil? 
           if !end_parse
-            Rails.logger.debug "we have a next page and its offset will be #{@offset + @items_per_page}"
+            nf = Youtuber::Feeds::UserFeed.new(:user => user,:offset => parser.response.next_offset, :items_per_page => parser.response.items_per_page)
+            Rails.logger.debug "next feed url #{nf.url}"
+            #self.enqueue_feed nf
           end
         end
-        videos
       end
                 
     end
-    
-    def self.perform(url)
-      end_parse = false
-      fp = Youtuber::FeedParser.new @url
-      fp.parse do | parser |
-        @offset = parser.response.offset
-        @items_per_page ||= parser.response.items_per_page
-        parser.response.entries.each do | entry |
-          videos << parser.parse_video(entry)
-          
-          if Youtuber::Video.video_exists?(videos.last.video_id)
-            end_parse = true
-            break
-          end
-          videos.last.save!    
-        end
-        end_parse = parser.response.next_page.nil? 
-        if !end_parse
-          Rails.logger.debug "we have a next page and its offset will be #{@offset + @items_per_page}"
-        end
-      end
-    end
-    
+   
   end
   
 end

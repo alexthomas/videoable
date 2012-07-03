@@ -21,6 +21,10 @@ module Youtuber
      (total_result_count / items_per_page.to_f).ceil
    end
    
+   def next_offset
+      next_page != nil ? ((next_page - 1) * items_per_page) + 1 : nil
+   end
+
   end
   
 end

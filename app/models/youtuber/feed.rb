@@ -1,3 +1,5 @@
+require 'resque'
+
 module Youtuber
   class Feed
     include Youtuber::Models.const_get("InstanceMethods")
@@ -21,10 +23,13 @@ module Youtuber
     
     def self.parse_feeds
       @@feeds.each do | feed |
-        Rails.logger.debug "lib file: #{File.dirname(__FILE__) + '/../../lib'}"
-        feed.parse
-        #Resque.enqueue(feed.class, @feed.url)
+        #feed.parse
+        feed.class.enqueue_feed feed
       end
+    end
+    
+    def self.enqueue_feed feed
+      Resque.enqueue(feed.class, feed.url)
     end
     
     def base_url

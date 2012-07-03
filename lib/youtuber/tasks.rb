@@ -3,4 +3,5 @@ namespace :youtuber do
     p "world"
   end
   
+  task :setup => "resque:setup"
 end

@@ -49,7 +49,7 @@ module Youtuber
           if !end_parse
             nf = Youtuber::Feeds::UserFeed.new(:user => user,:offset => parser.response.next_offset, :items_per_page => parser.response.items_per_page)
             Rails.logger.debug "next feed url #{nf.url}"
-            #self.enqueue_feed nf
+            self.enqueue_feed nf
           end
         end
       end

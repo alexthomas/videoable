@@ -5,7 +5,6 @@ module Youtuber
     include Youtuber::Models.const_get("InstanceMethods")
     
     mattr_accessor :feeds
-    @@feeds = []
     STD_FEEDS = [ :top_rated, :top_favorites, :most_viewed, :most_popular,
               :most_recent, :most_discussed, :most_linked, :most_responded,
               :recently_featured, :watch_on_mobile ]
@@ -18,11 +17,12 @@ module Youtuber
     
     def self.add_feed(params, options={})
       tof = determine_feed_type(params).camelize
-      @@feeds <<  "Youtuber::Feeds::#{tof}".constantize.new(params)
+      "Youtuber::Feeds::#{tof}".constantize.new(params)
     end
     
     def self.parse_feeds
-      @@feeds.each do | feed |
+      Rails.logger.debug "youtuber feeds: #{Youtuber.video_feeds.inspect}"
+      Youtuber.video_feeds.each do | feed |
         #feed.parse
         feed.class.enqueue_feed feed
       end

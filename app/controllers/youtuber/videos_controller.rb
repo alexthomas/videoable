@@ -4,7 +4,6 @@ module Youtuber
     
     def index
       Youtuber::Feed.feeds = []
-      Youtuber::Feed.add_feed :user => 'livestrong'
       #Youtuber::Feed.add_feed :user => 'unitednations'
       Youtuber::Feed.parse_feeds
       @videos = Video.all

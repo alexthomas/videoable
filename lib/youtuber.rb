@@ -6,6 +6,8 @@ require "cgi"
 
 module Youtuber
   
+  VIDEO_SOURCES = [:youtube,:vimeo]
+  
   mattr_accessor :app_root
   # Keys used when authenticating a user.
   mattr_accessor :video_feeds

@@ -6,6 +6,7 @@ module Youtuber
     initializer "youtuber.load_app_instance_data" do |app|
       Youtuber.setup do |config|
         config.app_root = app.root
+        config.add_feed :user => 'livestrong'
       end
     end
 

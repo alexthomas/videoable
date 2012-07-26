@@ -47,7 +47,7 @@ module Youtuber
     private
       def self.determine_video_source(params)
         video_source = 'youtube'
-        video_source = params[:video_source] if params[:video_source] && !(params[:video_source].to_sym & Youtuber.VIDEO_SOURCES).empty?
+        video_source = params[:video_source] if params[:video_source] && !([params[:video_source].to_sym] & Youtuber::VIDEO_SOURCES).empty?
         video_source
       end
     

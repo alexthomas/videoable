@@ -13,6 +13,7 @@ class CreateYoutuberVideoTable < ActiveRecord::Migration
       t.datetime :published_at
       t.datetime :updated_at
       t.datetime :uploaded_at
+      t.string :video_type
       t.timestamps
     end
   end

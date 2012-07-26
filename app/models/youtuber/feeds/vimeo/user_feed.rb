@@ -1,27 +1,27 @@
 module Youtuber
   module Feeds
-    module Youtube
-      class UserFeed < YoutubeFeed
-      
+    module Vimeo
+      class UserFeed < VimeoFeed
+        
+        @@max_page = 3
         @queue = :user_feed_queue
-      
-        attr_reader :user
+        REQUESTS = [:info,:videos,:all_videos,:subscriptions,:channels,:albums,:groups]
+        attr_reader :user,:page,:request
       
         def initialize(params,options = {})
           super params
           @url = base_url
-          @url << "#{params[:user]}/"
-        
-          user_playlist = params[:playlist] && params[:playlist] == 'favourites' ? 'favourites' : 'uploads'  
-          @url << user_playlist
-          @url << build_query_params(to_youtube_params)
+          @page ||= 1
+          @request ||= 'videos'
+          @url << "#{params[:user]}/#{@request}.json"
+          @url << build_query_params(to_vimeo_params)
           Rails.logger.debug "feed url: #{@url}"
         
         
         end
       
         def base_url
-          super << "users/"
+          super
         end
       
         def parse
@@ -29,13 +29,13 @@ module Youtuber
         end
       
         def self.enqueue_feed feed
-          Resque.enqueue(feed.class, feed.user,feed.url)
+          Resque.enqueue(feed.class, feed.user,feed.url,feed.page)
         end
       
-        def self.perform(user,url)
+        def self.perform(user,url,page)
           videos = []
           end_parse = false
-          fp = Youtuber::Parser::FeedParser.new url
+          fp = Youtuber::Parser::VimeoParser.new url
           fp.parse(fp) do | parser |
             parser.response.entries.each do | entry |
               videos << parser.parse_video(entry)
@@ -46,11 +46,11 @@ module Youtuber
               end
               videos.last.save!    
             end
-            end_parse = parser.response.next_page.nil? 
-            if !end_parse
-              nf = Youtuber::Feeds::Youtube::UserFeed.new(:user => user,:offset => parser.response.next_offset, :items_per_page => parser.response.items_per_page)
+            end_parse = page == @@max_page || parser.response.entries.empty?
+            if !end_parse 
+              nf = Youtuber::Feeds::Vimeo::UserFeed.new(:user => user,:page => (page + 1), :items_per_page => parser.response.items_per_page)
               Rails.logger.debug "next feed url #{nf.url}"
-              #self.enqueue_feed nf
+              self.enqueue_feed nf
             end
           end
         end

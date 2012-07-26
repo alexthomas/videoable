@@ -2,7 +2,8 @@ require "active_support/dependencies"
 require 'open-uri'
 require 'digest/md5'
 require 'nokogiri'
-require "cgi"
+require 'cgi'
+require 'oauth'
 
 module Youtuber
   
@@ -30,6 +31,11 @@ end
 require "youtuber/engine"
 require "youtuber/models"
 require "youtuber/feeds"
+require "youtuber/oauth"
+require "youtuber/api"
+require "youtuber/apis/vimeo"
+
+
 
 
 ActiveRecord::Base.extend Youtuber::Models

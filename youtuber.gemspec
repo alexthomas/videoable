@@ -19,6 +19,8 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 3.1.0"
   s.add_dependency "resque", "~> 1.0"
   s.add_runtime_dependency "nokogiri", "~> 1.5.2"
+  s.add_runtime_dependency "oauth", ">= 0.4.3"
   s.add_development_dependency "sqlite3"
   s.add_dependency "jquery-rails"
+  
 end

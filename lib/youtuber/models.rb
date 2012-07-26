@@ -69,11 +69,11 @@ module Youtuber
     module InstanceMethods
       
       def set_instance_variables( variables )
-        Rails.logger.debug " setting instance variables #{variables}"
+        #Rails.logger.debug " setting instance variables #{variables}"
         variables.each do |key, value|
           name = key.to_s
-          Rails.logger.debug " setting instance variable #{name} to #{value}"
-          Rails.logger.debug " #{name} responded" if respond_to?(name)
+          #Rails.logger.debug " setting instance variable #{name} to #{value}"
+          #Rails.logger.debug " #{name} responded" if respond_to?(name)
           instance_variable_set("@#{name}", value) if respond_to?(name)
         end
       end

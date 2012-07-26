@@ -2,25 +2,22 @@ module Youtuber
   module Feeds
     class VimeoFeed < Feed
 
-
+      RESPONSE_FORMATS = [:json,:xml]
+      
+      attr_reader :page
       def base_url
-        "http://http://vimeo.com/api/v2/"
+        "http://vimeo.com/api/v2/"
       end
 
       def to_vimeo_params
         {
-          'max-results' => @items_per_page,
-          'orderby' => @order_by,
-          'start-index' => @offset,
-          'v' => 2
+          'page' => @page
         }
       end
       
       private 
         def self.determine_feed_type(params)
-          feed_type = 'video_search'
-          feed_type = 'standard_search' if !(params.keys & STD_FEEDS).empty?
-          super params
+          super false,params
         end
     end
   end

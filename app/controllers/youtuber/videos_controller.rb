@@ -12,6 +12,10 @@ module Youtuber
     def search
       
     end
-        
+    
+    def upload
+     File.new('movie.mov')
+    end
+         
   end
 end

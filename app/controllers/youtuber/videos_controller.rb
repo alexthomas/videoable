@@ -12,6 +12,20 @@ module Youtuber
     def search
       
     end
+    
+    def upload
+      
+      xml = "<note>
+      <to>Tove</to>
+      <from>Jani</from>
+      <heading>Reminder</heading>
+      <body>Don't forget me this weekend!</body>
+      </note>"
+      
+      #io = File.open('test.mov')
+      uploader = Youtuber::Uploader.new
+      @greedyIo = uploader.upload('test.mov')
+    end
         
   end
 end

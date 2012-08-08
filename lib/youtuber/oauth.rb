@@ -1,5 +1,8 @@
 module Youtuber
   module Oauth
+    
+    @atoken = '09cb943ba3379a5f35d0c73c3e1f88c4'
+    @asecret = '9fa3bc0d546744080c9e638643cc237fd96119e7'
       
     def consumer
       @oauth_consumer ||= OAuth::Consumer.new(@consumer_key,@consumer_secret,{

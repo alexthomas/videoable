@@ -33,7 +33,10 @@ require "youtuber/models"
 require "youtuber/feeds"
 require "youtuber/oauth"
 require "youtuber/api"
+require "youtuber/uploader"
+require "youtuber/chain_io"
 require "youtuber/apis/vimeo"
+require "youtuber/apis/vimeo/upload"
 
 
 

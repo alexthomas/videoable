@@ -2,7 +2,7 @@ module Youtuber
 
   module Apis
     
-    class Vimeo < Youtuber::Api
+    class VimeoApi < Youtuber::Api
       
       def create_api_method(method, vimeo_method, options={})
         options = { :required => [], :optional => [] }.merge(options)

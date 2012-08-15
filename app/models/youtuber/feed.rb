@@ -3,14 +3,12 @@ require 'resque'
 module Youtuber
   class Feed
     include Youtuber::Models.const_get("InstanceMethods")
-    
-    mattr_accessor :feeds
-
               
     attr_reader :feed_id,:url,:updated_at,:total_result_count,:offset,:items_per_page
     
     def initialize(*params)
       set_instance_variables(*params)
+      @items_per_page ||= 20
     end
     
     def self.add_feed(params, options={})

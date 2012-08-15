@@ -1,13 +1,19 @@
 module Youtuber
   class Uploader
     class UploadError < RuntimeError; end
-    autoload :Upload,         'youtuber/apis/vimeo/upload'
+
+    CHUNK_SIZE = 2 * 1024 * 1024 # 2 megabytes
     
     attr_reader :io, :size, :filename
-    attr_reader :vimeo_api
+    attr_reader :endpoint, :chunks
+    attr_reader :vapi
+    attr_reader :ticket_id, :video_id
     
-    def initialize()
-      @vimeo_api = Youtuber::Apis::Vimeo::Upload.new
+    def initialize(consumer_key,consumer_secret,options = {})
+      params = {:consumer_key => consumer_key,:consumer_secret => consumer_secret}.merge(options)
+      Rails.logger.debug "vimeo params: #{params.inspect}"
+      @vapi = Youtuber::Apis::Vimeo::Upload.new(params)
+      @chunks = []
     end
     
     def upload(uploadable)
@@ -25,6 +31,16 @@ module Youtuber
     def upload_io(io, size, filename = 'io.data')
       raise "#{io.inspect} must respond to #read" unless io.respond_to?(:read)
       check_quota
+      authorize
+      t1 = Time.now
+      execute
+      t2 = Time.now
+      delta = t2 - t1
+      Rails.logger.debug "time taken to upload video: #{delta}"
+      raise UploadError.new, "Validation of chunks failed." unless valid?
+      complete
+
+      return video_id
     end
 
     # Helper for uploading files to 
@@ -35,7 +51,7 @@ module Youtuber
       @filename = File.basename(file_path)
       @io       = File.open(file_path)
       io.binmode
-
+      Rails.logger.debug "filename of file to upload: #{filename} filepath: #{file_path}"
       upload_io(io, size, filename).tap do
         io.close
       end
@@ -68,30 +84,19 @@ module Youtuber
       "An43094fu"
     end
 
-    # Uploads the file to Vimeo and returns the +video_id+ on success.
-    #def execute
-      #check_quota
-      #authorize
-      #upload
-      #raise UploadError.new, "Validation of chunks failed." unless valid?
-      #complete
-
-      #return video_id
-    #end
-
     # Checks whether the file can be uploaded.
     def check_quota
-      quota = vimeo_api.get_quota
+      quota = vapi.get_quota
       free  = quota["user"]["upload_space"]["free"].to_i
-      Rails.logger.debug "quota: #{quota} free: #{free}"
+      Rails.logger.debug "quota: #{quota} free: #{free} size: #{size}"
       raise UploadError.new, "file size exceeds quota. required: #{size}, free: #{free}" if size > free
     end
 
     # Gets a +ticket_id+ for the upload.
     def authorize
-      ticket = get_ticket
-
-      @id             = ticket["ticket"]["id"]
+      ticket = vapi.get_ticket
+      Rails.logger.debug "ticket: #{ticket.inspect}"
+      @ticket_id             = ticket["ticket"]["id"]
       @endpoint       = ticket["ticket"]["endpoint"]
       max_file_size   = ticket["ticket"]["max_file_size"].to_i
 
@@ -101,15 +106,16 @@ module Youtuber
     # Performs the upload.
     def execute
       while (chunk_data = io.read(CHUNK_SIZE)) do
-        chunk = Chunk.new(self, chunk_data)
+        chunk = Youtuber::Upload::Chunk.new(self, chunk_data)
         chunk.upload
         chunks << chunk
       end
+      
     end
 
     # Tells vimeo that the upload is complete.
     def complete
-      @video_id = complete(id, filename)
+      @video_id = vapi.complete(ticket_id, filename)
     end
 
     # Compares Vimeo's chunk list with own chunk list. Returns +true+ if identical.
@@ -125,7 +131,8 @@ module Youtuber
 
     # Returns a of Vimeo's received chunks and their respective sizes.
     def received_chunk_sizes
-      verification    = verify_chunks(id)
+      verification    = vapi.verify_chunks(ticket_id)
+      Rails.logger.debug "*****verification array: #{verification.inspect} *******"
       chunk_list      = verification["ticket"]["chunks"]["chunk"]
       chunk_list      = [chunk_list] unless chunk_list.is_a?(Array)
       Hash[chunk_list.map { |chunk| [chunk["id"], chunk["size"].to_i] }]

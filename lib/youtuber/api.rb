@@ -6,30 +6,34 @@ module Youtuber
   class Api
     include Youtuber::Oauth
     
-    def initialize *params
-        hash_options = params.first
-        @consumer_key         = hash_options[:consumer_key]
-        @consumer_secret      = hash_options[:consumer_secret]
-        @user                 = hash_options[:username]
-        @dev_key              = hash_options[:dev_key]
-        @client_id            = hash_options[:client_id] || "youtuber"  
-        @site                 = hash_options[:site] || "http://vimeo.com"
-        @api_endpoint         = hash_options[:api_endpoint] || "http://vimeo.com/api/rest/v2"
-        @request_token_path   = hash_options[:request_token_path] || "/oauth/request_token"
-        @authorize_path       = hash_options[:authorize_path] || "/oauth/authorize"
-        @access_token_path    = hash_options[:access_token_path] || "/oauth/access_token"
+    def initialize params
+        @consumer_key         = params[:consumer_key]
+        @consumer_secret      = params[:consumer_secret]
+        @user                 = params[:username]
+        @dev_key              = params[:dev_key]
+        @client_id            = params[:client_id] || "youtuber"  
+        @site                 = params[:site] || "http://vimeo.com"
+        @api_endpoint         = params[:api_endpoint] || "http://vimeo.com/api/rest/v2"
+        @request_token_path   = params[:request_token_path] || "/oauth/request_token"
+        @authorize_path       = params[:authorize_path] || "/oauth/authorize"
+        @access_token_path    = params[:access_token_path] || "/oauth/access_token"
         consumer
-        unless hash_options[:access_token].nil? && hash_options[:access_token_secret].nil?
-          authorize_from_access(hash_options[:access_token], hash_options[:access_token_secret])
+        unless params[:atoken].nil? && params[:asecret].nil?
+          authorize_from_access(params[:atoken], params[:asecret])
           access_token
+          Rails.logger.debug "atoken #{atoken} and asecret #{asecret}"
+        else
+          Rails.logger.debug "atoken #{atoken} and asecret #{asecret}are nil"
         end
     end
     
     def make_request(options, authorized)
       if authorized
-        raw_response = @oauth_consumer.request(:post, @api_endpoint, get_access_token, {}, options).body
+        Rails.logger.debug "unauthorized api endpoing: #{@api_endpoint}"
+        raw_response = consumer.request(:post, @api_endpoint, get_access_token, {}, options).body
       else
-        raw_response = @oauth_consumer.request(:post, @api_endpoint, nil, {}, options).body
+        Rails.logger.debug "authorized api endpoing: #{@api_endpoint}"
+        raw_response = consumer.request(:post, @api_endpoint, nil, {}, options).body
       end
 
       response = JSON.parse(raw_response)

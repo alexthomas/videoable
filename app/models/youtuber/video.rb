@@ -5,7 +5,7 @@ module Youtuber
     belongs_to :videoable, :polymorphic => true
     
     attr_accessible :video_id, :title, :ytid, :description, :duration, :player_url, 
-                  :widescreen, :noembed, :state,:is_private,:published_at,:uploaded_at,:updated_at
+                  :widescreen, :noembed, :state,:is_private,:published_at,:uploaded_at,:updated_at,:video_type
 
                   
     def self.video_exists?(vid)

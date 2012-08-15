@@ -4,7 +4,11 @@ module Youtuber
     
     class VimeoApi < Youtuber::Api
       
-      def create_api_method(method, vimeo_method, options={})
+      def self.authenticated
+        
+      end
+      
+      def self.create_api_method(method, vimeo_method, options={})
         options = { :required => [], :optional => [] }.merge(options)
 
         method = method.to_s
@@ -17,7 +21,7 @@ module Youtuber
         authorized = options.fetch(:authorized, true)
 
         parameters = "(#{required unless required.empty?}#{',' unless required.empty?}options={#{optional}})"
-
+        
         method_string = <<-method
 
           def #{method}#{parameters}

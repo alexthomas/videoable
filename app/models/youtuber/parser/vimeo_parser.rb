@@ -3,8 +3,10 @@ module Youtuber
   module Parser
     class VimeoParser < FeedParser
       
+      
+      
       def parse_content content
-        entries = JSON.parse(content)
+        entries = content.is_a?(String) ? JSON.parse(content) : content
         Youtuber::Response.new(
           :entries             => entries)
       end

@@ -1,9 +1,9 @@
 module Youtuber
   module Oauth
     
-    @atoken = '09cb943ba3379a5f35d0c73c3e1f88c4'
-    @asecret = '9fa3bc0d546744080c9e638643cc237fd96119e7'
-      
+    attr_reader :atoken, :asecret
+    attr_reader :oauth_consumer
+    
     def consumer
       @oauth_consumer ||= OAuth::Consumer.new(@consumer_key,@consumer_secret,{
         :site => @site,
@@ -21,6 +21,7 @@ module Youtuber
     end
     
     def access_token
+      Rails.logger.debug "creating access token"
       @access_token = OAuth::AccessToken.new(consumer, @atoken, @asecret)
     end
 
@@ -30,6 +31,7 @@ module Youtuber
     end
     
     def get_access_token(oauth_token=nil, oauth_secret=nil, oauth_verifier=nil)
+       @access_token ? Rails.logger.debug("have access token") : Rails.logger.debug("don't have access token")
        @access_token ||= OAuth::RequestToken.new(consumer, oauth_token, oauth_secret).get_access_token :oauth_verifier => oauth_verifier
     end
     
@@ -37,6 +39,10 @@ module Youtuber
       @atoken,@asecret = atoken, asecret
     end
    
+    def authenticated
+      
+    end
+    
   end
 
 end

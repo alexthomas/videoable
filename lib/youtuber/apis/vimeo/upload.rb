@@ -21,7 +21,7 @@ module Youtuber
         # Returns the space and HD uploads left for a user.
         create_api_method :get_quota,
                           "vimeo.videos.upload.getQuota"
-        Rails.logger.debug "creating method get_quota "
+                          
         # Verify that the chunks were uploaded properly.
         create_api_method :verify_chunks,
                           "vimeo.videos.upload.verifyChunks",

@@ -6,15 +6,22 @@ module Youtuber
         @@max_page = 3
         @queue = :user_feed_queue
         REQUESTS = [:info,:videos,:all_videos,:subscriptions,:channels,:albums,:groups]
-        attr_reader :user,:page,:request
+        attr_reader :user,:page,:request,:fp
       
         def initialize(params,options = {})
           super params
-          @url = base_url
-          @page ||= 1
-          @request ||= 'videos'
-          @url << "#{params[:user]}/#{@request}.json"
-          @url << build_query_params(to_vimeo_params)
+          
+          params = Youtuber::Feeds::VimeoFeed.authenticate_params params
+          @@vapi = Youtuber::Apis::Vimeo::Video.new(params) if Youtuber::Feeds::VimeoFeed.authenticated_access?(params)
+          Rails.logger.debug "vapi in user feed: #{@@vapi.inspect}"
+          if @@vapi.nil?
+            @url = base_url
+            @page ||= 1
+            @request ||= 'videos'
+            @url << "#{params[:user]}/#{@request}.json"
+            @url << build_query_params(to_vimeo_params)
+          end
+          
           Rails.logger.debug "feed url: #{@url}"
         
         
@@ -29,30 +36,52 @@ module Youtuber
         end
       
         def self.enqueue_feed feed
-          Resque.enqueue(feed.class, feed.user,feed.url,feed.page)
+          Resque.enqueue(feed.class, feed.user,feed.url,feed.page,feed.items_per_page)
         end
       
-        def self.perform(user,url,page)
+        def self.simple_parse url
           videos = []
           end_parse = false
           fp = Youtuber::Parser::VimeoParser.new url
-          fp.parse(fp) do | parser |
-            parser.response.entries.each do | entry |
-              videos << parser.parse_video(entry)
+        end
+        
+        def self.advanced_parse user,page,items_per_page
+          Rails.logger.debug "we are doing an advanced parse"
+          fp = Youtuber::Parser::VimeoParser.new
+          response = @@vapi.get_all(user, :page => page, :per_page => items_per_page)
+          fp.content = response['videos']['video']
+          #Rails.logger.debug "content returned from authenticated call: #{response}"
+          #Rails.logger.debug "videos returned from authenticated call: #{fp.content}"
+          Rails.logger.debug "total videos: #{response['videos']['total']}"
+          Rails.logger.debug "videos pp: #{response['videos']['perpage']}"
+          fp.end_parse = true if response['videos']['total'].to_i < response['videos']['perpage'].to_i
+          fp
+        end
+        
+        def self.perform(user,url,page,items_per_page)
+            videos = []
+            fp = (@@vapi.nil?) ? self.simple_parse(url) : self.advanced_parse(user,page,items_per_page)
+            
+            fp.parse(fp) do | parser |
+              parser.response.entries.each do | entry |
+                videos << parser.parse_video(entry)
 
-              if Youtuber::Video.video_exists?(videos.last.video_id)
-                end_parse = true
-                break
+                if Youtuber::Video.video_exists?(videos.last.video_id)
+                  end_parse = true
+                  break
+                end
+                videos.last.save!    
               end
-              videos.last.save!    
+
             end
-            end_parse = page == @@max_page || parser.response.entries.empty?
-            if !end_parse 
-              nf = Youtuber::Feeds::Vimeo::UserFeed.new(:user => user,:page => (page + 1), :items_per_page => parser.response.items_per_page)
-              Rails.logger.debug "next feed url #{nf.url}"
+            
+            Rails.logger.debug "returned videos: #{videos}"
+            fp.end_parse = fp.end_parse || page == @@max_page || videos.empty?
+            if !fp.end_parse 
+              nf = Youtuber::Feeds::Vimeo::UserFeed.new(:user => user,:page => (page + 1), :items_per_page => items_per_page)
               self.enqueue_feed nf
             end
-          end
+          
         end
                 
       end

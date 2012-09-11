@@ -14,6 +14,7 @@ class CreateYoutuberVideoTable < ActiveRecord::Migration
       t.datetime :updated_at
       t.datetime :uploaded_at
       t.string :video_type
+      t.string :from_feed
       t.timestamps
     end
   end

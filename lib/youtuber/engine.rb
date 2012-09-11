@@ -11,7 +11,7 @@ module Youtuber
       end
     end
 
-    initializer "team_page.load_static_assets" do |app|
+    initializer "youtuber.load_static_assets" do |app|
       app.middleware.use ::ActionDispatch::Static, "#{root}/public"
     end
     

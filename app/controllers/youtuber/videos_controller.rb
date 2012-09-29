@@ -3,9 +3,7 @@ module Youtuber
   class VideosController < ::ApplicationController
     
     def index
-      #Youtuber::Feed.feeds = []
-      #Youtuber::Feed.add_feed :user => 'unitednations'
-      Youtuber::Feed.parse_feeds
+      Youtuber::FeedParser.parse_feeds
       @videos = Video.all
     end
     

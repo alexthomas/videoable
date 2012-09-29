@@ -12,7 +12,7 @@ module Youtuber
       end
       
       def parse_video video
-         noembed = video['embed_privacy'] == 'amywhere' ? false : true
+         noembed = video['embed_privacy'] == 'anywhere' ? false : true
          Youtuber::Video.new(
            :video_id       => video['id'],
            :uploaded_at    => video['upload_date'],
@@ -23,7 +23,7 @@ module Youtuber
            :player_url     => video['url'],
            :noembed        => noembed,
            :is_private   => false,
-           :video_type  => 'youtube'
+           :video_type  => 'vimeo'
            )
       end
       

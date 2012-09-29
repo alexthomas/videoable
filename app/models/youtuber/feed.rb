@@ -6,8 +6,9 @@ module Youtuber
               
     attr_reader :feed_id,:url,:updated_at,:total_result_count,:offset,:items_per_page
     
-    def initialize(*params)
-      set_instance_variables(*params)
+    def initialize(params)
+      Rails.logger.debug "feed params #{params}"
+      set_instance_variables(params)
       @items_per_page ||= 20
     end
 

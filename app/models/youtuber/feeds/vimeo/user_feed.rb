@@ -13,7 +13,6 @@ module Youtuber
           
           params = Youtuber::Feeds::VimeoFeed.authenticate_params params
           @@vapi = Youtuber::Apis::Vimeo::Video.new(params) if Youtuber::Feeds::VimeoFeed.authenticated_access?(params)
-          Rails.logger.debug "vapi in user feed: #{@@vapi.inspect}"
           if @@vapi.nil?
             @url = base_url
             @page ||= 1

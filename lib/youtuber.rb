@@ -30,6 +30,7 @@ module Youtuber
     end
     
     def self.add_oauth(service, params)
+      Rails.logger.debug "#{service} oauth is #{params.inspect}"
       @@oauths.store(service,params) if params.is_a?(Hash)
     end
 end

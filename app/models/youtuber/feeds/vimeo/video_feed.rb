@@ -4,17 +4,15 @@ module Youtuber
       class VideoFeed < VimeoFeed
         
         attr_accessor :vid
+        attr_reader :user,:page,:request,:fp
         @queue = :video_feed_queue
         
         def initialize(params,options = {})
           @vid = nil
           super params
           params = Youtuber::Feeds::VimeoFeed.authenticate_params params
+          Rails.logger.debug "vid is: #{@vid}"
           @@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(params) : nil
-          
-          Rails.logger.debug "options in video feed: #{options.inspect}"
-          Rails.logger.debug "params in video feed: #{params.inspect}"
-          Rails.logger.debug "vapi in video feed: #{@@vapi.inspect}"
           @url = base_url << "#{@vid}.json" if @@vapi.nil?
           Rails.logger.debug "feed url: #{@url}"
         
@@ -29,10 +27,24 @@ module Youtuber
           base_url << "video/#{@vid}.json"
         end
         
-        def self.perform url
-          videos = []
-          fp = Youtuber::Parser::VimeoParser.new url
+        def self.enqueue_feed feed
+          Resque.enqueue(feed.class, feed.url,feed.vid)
+        end
+        
+        def self.advanced_parse vid
+          Rails.logger.debug "we are doing an advanced parse with a vid of #{vid}"
+          fp = Youtuber::Parser::VimeoParser.new
+          response = @@vapi.get_info vid
+          Rails.logger.debug "content returned from authenticated call: #{response}"
+          fp.content = response['video']
           
+          Rails.logger.debug "videos returned from authenticated call: #{fp.content}"
+          fp
+        end
+        
+        def self.perform url,vid
+          videos = []
+          fp = (@@vapi.nil?) ? Youtuber::Parser::VimeoParser.new(url) : self.advanced_parse(vid)
           fp.parse(fp) do | parser |
             parser.response.entries.each do | entry |
               videos << parser.parse_video(entry)

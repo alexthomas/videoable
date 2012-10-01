@@ -42,21 +42,23 @@ module Youtuber
           fp
         end
         
-        def self.perform url,vid
-          videos = []
+        def self.parse_feed url,vid,save = false
+          video = false
           fp = (@@vapi.nil?) ? Youtuber::Parser::VimeoParser.new(url) : self.advanced_parse(vid)
           fp.parse(fp) do | parser |
             parser.response.entries.each do | entry |
-              videos << parser.parse_video(entry)
+              video = parser.parse_video(entry)
 
-              if Youtuber::Video.video_exists?(videos.last.video_id)
-                end_parse = true
-                break
-              end
-              videos.last.save!    
+              break if Youtuber::Video.video_exists?(video)
+              video.save! if save
             end
 
           end
+          video
+        end
+        
+        def self.perform url,vid
+          self.parse_feed url,vid,true
         end
         
       end

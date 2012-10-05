@@ -11,7 +11,12 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120705155336) do
+ActiveRecord::Schema.define(:version => 20121005112121) do
+
+  create_table "videos", :force => true do |t|
+    t.string "title"
+    t.string "description"
+  end
 
   create_table "yt_videos", :force => true do |t|
     t.string   "video_id"
@@ -27,6 +32,8 @@ ActiveRecord::Schema.define(:version => 20120705155336) do
     t.datetime "updated_at"
     t.datetime "uploaded_at"
     t.string   "video_type"
+    t.integer  "videoable_id"
+    t.string   "videoable_type"
     t.datetime "created_at"
   end
 

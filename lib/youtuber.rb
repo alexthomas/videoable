@@ -37,6 +37,7 @@ end
 #Require our engine
 require "youtuber/engine"
 require "youtuber/models"
+require "youtuber/models/videoable"
 require "youtuber/feeds"
 require "youtuber/oauth"
 require "youtuber/api"

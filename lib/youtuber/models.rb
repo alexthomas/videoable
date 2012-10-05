@@ -4,15 +4,18 @@ module Youtuber
     def self.config(mod, *accessors) #:nodoc:
       class << mod; attr_accessor :available_configs; end
       mod.available_configs = accessors
-
+      
       accessors.each do |accessor|
         mod.class_eval <<-METHOD, __FILE__, __LINE__ + 1
           def #{accessor}
             if defined?(@#{accessor})
+              Rails.logger.debug "#{accessor} is defined in class"
               @#{accessor}
             elsif superclass.respond_to?(:#{accessor})
+              Rails.logger.debug "#{accessor} is defined in superclass"
               superclass.#{accessor}
             else
+              Rails.logger.debug "#{accessor} is defaulting to Youtuber var"
               Youtuber.#{accessor}
             end
           end
@@ -39,11 +42,11 @@ module Youtuber
         
         selected_modules.each do |m|
           mod = Youtuber::Models.const_get(m.to_s.classify)
-
+          logger.debug "model in Models is #{mod.inspect}"
           if mod.const_defined?("ClassMethods")
             class_mod = mod.const_get("ClassMethods")
             extend class_mod
-
+            logger.debug "model in Models is #{class_mod.inspect}"
             if class_mod.respond_to?(:available_configs)
               available_configs = class_mod.available_configs
               available_configs.each do |config|

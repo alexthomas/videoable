@@ -22,5 +22,13 @@ module Youtuber
     def have_content?
       @content
     end
+    
+    def self.parse_feeds
+      Rails.logger.debug "youtuber feeds: #{Youtuber.video_feeds.inspect}"
+      Youtuber.video_feeds.each do | feed |
+        #feed.parse
+        feed.class.enqueue_feed feed
+      end
+    end
   end
 end

@@ -17,6 +17,10 @@ module Youtuber
     end
     
     def upload(uploadable)
+      Resque.enqueue(Uploader, uploadable)
+    end
+
+    def self.perform uploadable
       case uploadable
       when File, Tempfile
         upload_file(uploadable)
@@ -26,7 +30,7 @@ module Youtuber
         upload_io(uploadable)
       end
     end
-
+    
     # Uploads an IO to 
     def upload_io(io, size, filename = 'io.data')
       raise "#{io.inspect} must respond to #read" unless io.respond_to?(:read)

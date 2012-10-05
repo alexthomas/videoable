@@ -26,10 +26,11 @@ module Youtuber
     end
   
     def self.add_feed(params, options={})
-      @@video_feeds << Youtuber::Feed.add_feed(params, options={})
+      @@video_feeds << Youtuber::Feed.create_feed(params, options={})
     end
     
     def self.add_oauth(service, params)
+      Rails.logger.debug "#{service} oauth is #{params.inspect}"
       @@oauths.store(service,params) if params.is_a?(Hash)
     end
 end

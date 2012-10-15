@@ -16,11 +16,11 @@ module Youtuber
       @chunks = []
     end
     
-    def upload(uploadable)
-      Resque.enqueue(Uploader, uploadable)
+    def upload(uploadable,delayed = true)
+      (delayed) ? Resque.enqueue(Uploader, uploadable) : Uploader.upload(uploadable)
     end
-
-    def self.perform uploadable
+    
+    def self.upload uploadable
       case uploadable
       when File, Tempfile
         upload_file(uploadable)
@@ -29,6 +29,10 @@ module Youtuber
       else
         upload_io(uploadable)
       end
+    end
+    
+    def self.perform uploadable
+      Uploader.upload uploadable
     end
     
     # Uploads an IO to 

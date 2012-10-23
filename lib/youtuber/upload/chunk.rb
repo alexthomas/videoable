@@ -26,9 +26,6 @@ module Youtuber
             io.instance_variable_set :"@original_filename", uploader.filename
             def io.original_filename; @original_filename; end
             def io.content_type; "application/octet-stream"; end
-            Rails.logger.debug "io original filename #{io.original_filename}"
-            Rails.logger.debug "io original filename #{@original_filename}"
-            Rails.logger.debug "io #{io.inspect}"
             
             parts = []
             parts << Parts::ParamPart.new(MULTIPART_BOUNDARY, "ticket_id", uploader.ticket_id)

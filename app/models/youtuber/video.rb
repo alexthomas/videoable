@@ -1,6 +1,6 @@
 module Youtuber
   class Video < ActiveRecord::Base
-    include Youtuber::Models.const_get("InstanceMethods")
+    include Youtuber::Models.const_get("InstanceMethods"), Youtuber::VideoUploader
     self.table_name = "yt_videos"
     
     

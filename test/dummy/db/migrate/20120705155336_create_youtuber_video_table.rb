@@ -16,6 +16,8 @@ class CreateYoutuberVideoTable < ActiveRecord::Migration
       t.string :video_type
       t.integer :videoable_id
       t.string :videoable_type
+      t.string :status
+      t.string :ticket_id
       t.timestamps
     end
   end

@@ -16,8 +16,8 @@ module Youtuber
         #config.add_feed :user => 'user3103460', 
         #:video_source => 'vimeo'
         
-        config.add_feed :vid => '27727325', 
-        :video_source => 'vimeo'
+        #config.add_feed :vid => '27727325', 
+        #:video_source => 'vimeo'
         
         
       end

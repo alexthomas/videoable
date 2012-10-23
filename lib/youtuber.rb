@@ -48,6 +48,7 @@ require "youtuber/chain_io"
 require "youtuber/apis/vimeo"
 require "youtuber/apis/vimeo/upload"
 require "youtuber/apis/vimeo/video"
+require "youtuber/video_uploader"
 
 
 

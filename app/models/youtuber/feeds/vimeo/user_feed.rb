@@ -11,7 +11,7 @@ module Youtuber
         def initialize(params,options = {})
           super params
           
-          params = Youtuber::Feeds::VimeoFeed.authenticate_params params
+          params = Youtuber.authenticate_params 'vimeo', params
           @@vapi = Youtuber::Apis::Vimeo::Video.new(params) if Youtuber::Feeds::VimeoFeed.authenticated_access?(params)
           if @@vapi.nil?
             @url = base_url

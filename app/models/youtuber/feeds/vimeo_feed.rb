@@ -17,14 +17,6 @@ module Youtuber
       end
       
       protected
-      
-        def self.authenticate_params params
-          return params if params.is_a?(Hash) && (!params[:atoken].nil? && !params[:asecret].nil?)
-          params.merge!(Youtuber.oauths['vimeo']) if Youtuber.oauths.has_key?('vimeo')
-          Rails.logger.debug "we have vimeo oauth" if Youtuber.oauths.has_key?('vimeo')
-          Rails.logger.debug "params in authenticate params #{params.inspect}"
-          return params
-        end
         
        def self.authenticated_access? params
           params.is_a?(Hash) && (!params[:atoken].nil? && !params[:asecret].nil?) ? true : false
@@ -32,8 +24,8 @@ module Youtuber
       
         
        def self.set_vapi params
-         @@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(params) : nil
-         
+         #@@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(params) : nil
+         @@vapi = Youtuber::Apis::Vimeo::Video.new(Youtuber.authenticate_params('vimeo', params))
        end
        
        def self.have_vapi?

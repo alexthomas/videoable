@@ -10,7 +10,7 @@ module Youtuber
         def initialize(params,options = {})
           @vid = nil
           super params
-          params = Youtuber::Feeds::VimeoFeed.authenticate_params params
+          params = Youtuber.authenticate_params 'vimeo', params
           Rails.logger.debug "vid is: #{@vid}"
           @@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(params) : nil
           @url = base_url << "#{@vid}.json" if @@vapi.nil?

@@ -10,7 +10,7 @@ module Youtuber
     attr_reader :ticket_id, :video_id
     
     def initialize(oauth_params = {})
-      params = Youtuber::Apis::VimeoApi.authenticate_params oauth_params
+      params = Youtuber.authenticate_params 'vimeo', oauth_params
       Rails.logger.debug "vimeo params: #{params.inspect}"
       @vapi = Youtuber::Apis::Vimeo::Upload.new(params)
       @chunks = []

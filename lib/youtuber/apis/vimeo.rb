@@ -8,14 +8,6 @@ module Youtuber
         
       end
       
-      def self.authenticate_params params
-        return params if params.is_a?(Hash) && (!params[:atoken].nil? && !params[:asecret].nil?)
-        params.merge!(Youtuber.oauths['vimeo']) if Youtuber.oauths.has_key?('vimeo')
-        Rails.logger.debug "we have vimeo oauth" if Youtuber.oauths.has_key?('vimeo')
-        Rails.logger.debug "params in authenticate params #{params.inspect}"
-        return params
-      end
-      
       def self.create_api_method(method, vimeo_method, options={})
         options = { :required => [], :optional => [] }.merge(options)
 

@@ -33,6 +33,14 @@ module Youtuber
       Rails.logger.debug "#{service} oauth is #{params.inspect}"
       @@oauths.store(service,params) if params.is_a?(Hash)
     end
+    
+    def self.authenticate_params api,params
+      return params if params.is_a?(Hash) && (!params[:atoken].nil? && !params[:asecret].nil?)
+      params.merge!(Youtuber.oauths['vimeo']) if @@oauths.has_key?(api)
+      Rails.logger.debug "we have #{api} oauth" if @@oauths.has_key?(api)
+      Rails.logger.debug "params in authenticate params #{params.inspect}"
+      return params
+    end
 end
 
 #Require our engine

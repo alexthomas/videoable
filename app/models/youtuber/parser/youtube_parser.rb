@@ -1,6 +1,6 @@
 module Youtuber
   module Parser
-    class FeedParser
+    class YoutubeParser < FeedParser
       attr_reader :response
     
       @queue = :feed_queue
@@ -64,7 +64,7 @@ module Youtuber
         is_private = media_group.at_xpath("yt:private") ? true : false
 
         Youtuber::Video.new(
-          :video_id       => video_id,
+          :video_id       => ytid,
           :published_at   => published_at,
           :updated_at     => updated_at,
           :uploaded_at    => uploaded_at,
@@ -77,6 +77,7 @@ module Youtuber
           :noembed        => noembed,
           :ytid      => ytid,
           :is_private   => is_private,
+          :video_type  => 'youtube'
           
           )
       end

@@ -3,8 +3,7 @@ module Youtuber
     module Vimeo
       class VideoFeed < VimeoFeed
         
-        attr_accessor :vid
-        attr_reader :user,:page,:request,:fp
+        attr_reader :vid,:user,:page,:request,:fp
         @queue = :video_feed_queue
         
         def initialize(params,options = {})
@@ -12,7 +11,7 @@ module Youtuber
           super params
           params = Youtuber.authenticate_params 'vimeo', params
           Rails.logger.debug "vid is: #{@vid}"
-          @@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(params) : nil
+          @@vapi = VideoFeed.set_vapi params
           @url = base_url << "#{@vid}.json" if @@vapi.nil?
           Rails.logger.debug "feed url: #{@url}"
         

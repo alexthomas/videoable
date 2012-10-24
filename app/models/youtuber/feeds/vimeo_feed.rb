@@ -24,8 +24,7 @@ module Youtuber
       
         
        def self.set_vapi params
-         #@@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(params) : nil
-         @@vapi = Youtuber::Apis::Vimeo::Video.new(Youtuber.authenticate_params('vimeo', params))
+         @@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(Youtuber.authenticate_params('vimeo', params)) : nil
        end
        
        def self.have_vapi?

@@ -12,7 +12,7 @@ module Youtuber
           super params
           
           params = Youtuber.authenticate_params 'vimeo', params
-          @@vapi = Youtuber::Apis::Vimeo::Video.new(params) if Youtuber::Feeds::VimeoFeed.authenticated_access?(params)
+          @@vapi = VideoFeed.set_vapi params
           if @@vapi.nil?
             @url = base_url
             @page ||= 1

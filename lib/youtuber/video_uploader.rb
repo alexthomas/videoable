@@ -5,10 +5,9 @@ module Youtuber
       @queue = :upload_queue
       included do
         
-        YOUTUBE_REGEXP  = /^(?:https?:\/\/)?(?:[0-9A-Z-]+\.)?(youtu\.be\/|youtube\.com)/
-        VIMEO_REGEXP    = /^(?:https?:\/\/)?(?:[0-9A-Z-]+\.)?(vimeo.com)/
-        VID_REGEXP      = /^(?:https?:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)[?=&+%\w-]* |
-                              ^(?:https?:\/\/)?(?:[0-9A-Z-]+\.)?(?:vimeo.com\/)(?:video\/)?(\w+)$/ix
+        YOUTUBE_REGEXP  = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(youtu\.be\/|youtube\.com)/
+        VIMEO_REGEXP    = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(vimeo.com)/
+        VID_REGEXP      = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)[?=&+%\w-]*|^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(?:vimeo.com\/)(?:video\/)?(\w+)$/ix
 
         attr_accessor   :video_url,:attached_video,:remote_video
         attr_accessible :video_url,:attached_video
@@ -41,17 +40,19 @@ module Youtuber
         Rails.logger.debug "generating remote video"
         #determine if youtube or vimeo
         video_type = get_video_type video_url
+        
         if video_type
           vid = get_video_id(video_url)
+         
           #generate remote feed for single video
-          self.remote_video = true if !populate_video_fields_from_remote(vid).nil?
+          self.remote_video = true if !populate_video_fields_from_remote(vid,video_type).nil?
         end
         rescue #rescue a failed grabbing of remote feed
       end
      
-      def populate_video_fields_from_remote vid
-        vf = Youtuber::Feeds::Vimeo::VideoFeed.new :vid => vid
-        video = Youtuber::Feeds::Vimeo::VideoFeed.parse_feed vf.url,vf.vid #parse feed should generate error parsing video error
+      def populate_video_fields_from_remote vid,service
+        vf = "Youtuber::Feeds::#{service.camelize}::VideoFeed".constantize.new :vid => vid
+        video = "Youtuber::Feeds::#{service.camelize}::VideoFeed".constantize.parse_feed vf.url,vf.vid #parse feed should generate error parsing video error
         Rails.logger.debug "generating remote video in Video Uploader module is #{video.inspect}"
         if !video.nil?
           Rails.logger.debug "setting video instance variables"
@@ -78,8 +79,7 @@ module Youtuber
       end
       
       def get_video_id url
-        video_id = (url =~ VID_REGEXP && $1) ? $1 : false
-        video_id = (!video_id && $2) ? $2 : false
+        video_id = (url =~ VID_REGEXP && $1) ? $1 : $2
       end
       
       def self.perform video_id,uploadable_path
@@ -89,7 +89,10 @@ module Youtuber
         uploader = Uploader.new
         remote_video_id = uploader.upload uploadable_path, false
         Rails.logger.debug "remote video id #{remote_video_id}"
-        video.populate_video_fields_from_remote remote_video_id
+        vapi = Youtuber::Apis::Vimeo::Video.new
+        video.populate_video_fields_from_remote remote_video_id,video.video_type
+        vapi.set_title(remote_video_id, video.title) if !video.title.blank?
+        vapi.set_description(remote_video_id, video.description) if !video.description.blank?
         video.save if video.changed?
       end
     end

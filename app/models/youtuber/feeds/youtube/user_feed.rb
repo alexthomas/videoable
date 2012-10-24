@@ -35,7 +35,7 @@ module Youtuber
         def self.perform(user,url)
           videos = []
           end_parse = false
-          fp = Youtuber::Parser::FeedParser.new url
+          fp = Youtuber::Parser::YoutubeParser.new url
           fp.parse(fp) do | parser |
             parser.response.entries.each do | entry |
               videos << parser.parse_video(entry)

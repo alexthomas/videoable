@@ -6,7 +6,7 @@ module Youtuber
   class Api
     include Youtuber::Oauth
     
-    def initialize params
+    def initialize params = {}
         @consumer_key         = params[:consumer_key]
         @consumer_secret      = params[:consumer_secret]
         @user                 = params[:username]

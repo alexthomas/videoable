@@ -39,13 +39,13 @@ module Youtuber
       def generate_video_from_remote
         Rails.logger.debug "generating remote video"
         #determine if youtube or vimeo
-        video_type = get_video_type video_url
-        
+        self.video_type = get_video_type video_url
+       
         if video_type
-          vid = get_video_id video_url
-         
+          self.video_id = get_video_id video_url
+          Rails.logger.debug "video id #{video_id}"
           #generate remote feed for single video
-          self.remote_video = true if !vid.nil?
+          self.remote_video = true if !video_id.nil?
         end
         rescue #rescue a failed grabbing of remote feed
       end

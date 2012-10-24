@@ -33,15 +33,20 @@ module Youtuber
       @is_private
     end
     
-    def embed_html(width = 425, height = 350)
-      <<EDOC
-<object width="#{width}" height="#{height}">
-<param name="movie" value="#{@player_url}"></param>
-<param name="wmode" value="transparent"></param>
-<embed src="#{embed_url}" type="application/x-shockwave-flash"
- wmode="transparent" width="#{width}" height="#{height}"></embed>
-</object>
-EDOC
+    def embed_video(width = 425, height = 350)
+      method("#{video_type}_embed_html").call(width,height)
+    end
+    
+    def youtube_embed_html(width = 425, height = 350)
+      <<-EMBED
+        <iframe width="#{width}" height="#{height}" src="http://www.youtube.com/embed/#{video_id}" frameborder="0" allowfullscreen></iframe>
+      EMBED
+    end
+    
+    def vimeo_embed_html(width = 500, height = 375)
+      <<-EMBED
+        <iframe src="http://player.vimeo.com/video/#{video_id}" width="#{width}" height="#{height}" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe> 
+      EMBED
     end
     
   end

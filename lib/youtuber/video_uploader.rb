@@ -42,10 +42,10 @@ module Youtuber
         video_type = get_video_type video_url
         
         if video_type
-          vid = get_video_id(video_url)
+          vid = get_video_id video_url
          
           #generate remote feed for single video
-          self.remote_video = true if !populate_video_fields_from_remote(vid,video_type).nil?
+          self.remote_video = true if !vid.nil?
         end
         rescue #rescue a failed grabbing of remote feed
       end

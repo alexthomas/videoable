@@ -5,6 +5,10 @@ module Youtuber
       @queue = :upload_queue
       included do
         
+        class << self
+          @@vapi = Youtuber::Apis::Vimeo::Video.new
+        end
+        
         YOUTUBE_REGEXP  = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(youtu\.be\/|youtube\.com)/
         VIMEO_REGEXP    = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(vimeo.com)/
         VID_REGEXP      = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)[?=&+%\w-]*|^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(?:vimeo.com\/)(?:video\/)?(\w+)$/ix
@@ -89,34 +93,38 @@ module Youtuber
       end
       
       def self.perform video_id,uploadable_path,action
-        video = (action=='upload') ? self.upload_video : self.delete_video
-        video.save if video.changed?
+        video = (action=='upload') ? self.upload_video(video_id,uploadable_path) : self.delete_video(video_id)
       end
-    end
-    
-    def self.upload_video video_id,uploadable_path
-      Rails.logger.debug "performing upload resque job for video #{video_id}"
-      Rails.logger.debug "uploadble path in perform is #{uploadable_path}"
-      video = Video.find video_id
-      uploader = Uploader.new
-      remote_video_id = uploader.upload uploadable_path, false
-      Rails.logger.debug "remote video id #{remote_video_id}"
-      vapi = Youtuber::Apis::Vimeo::Video.new
-      video.populate_video_fields_from_remote remote_video_id,video.video_type
-      vapi.set_title(remote_video_id, video.title) if !video.title.blank?
-      vapi.set_description(remote_video_id, video.description) if !video.description.blank?
-      video
-    end
-    
-    #use try instead of find?
-    def self.delete_video
       
-      video = Video.find video_id
-      Rails.logger.debug "trying to delete video from vimeo #{video.id}"
-      vapi = Youtuber::Apis::Vimeo::Video.new
-      vapi.delete video.video_id
-      rescue
-      ensure
-      video
-    end
+      #add in ability to check if video successfully uploaded or not - if not then delete video
+      def self.upload_video video_id,uploadable_path
+        Rails.logger.debug "video id is #{video_id}"
+        Rails.logger.debug "performing upload resque job for video #{video_id}"
+        Rails.logger.debug "uploadble path in perform is #{uploadable_path}"
+        video = Video.find video_id
+        video.video_type = 'vimeo'
+        Rails.logger.debug "pre upload video is #{video.inspect}"
+        uploader = Uploader.new
+        remote_video_id = uploader.upload uploadable_path, false
+        Rails.logger.debug "remote video id #{remote_video_id}"
+
+        video.populate_video_fields_from_remote remote_video_id,video.video_type
+        response = @@vapi.set_title(remote_video_id, video.title) if !video.title.blank?
+        Rails.logger.debug "response from vapi set title #{response.inspect}"
+        response = @@vapi.set_description(remote_video_id, video.description) if !video.description.blank?
+        Rails.logger.debug "response from vapi set description #{response.inspect}"
+        Rails.logger.debug "video is #{video.inspect}"
+        video.save if video.changed?
+        rescue
+      end
+
+      #use try instead of find?
+      def self.delete_video video_id
+        video = Video.find video_id
+        Rails.logger.debug "trying to delete video from vimeo #{video.id}"
+        @@vapi.delete video.video_id
+        rescue
+      end
+      
+    end 
 end

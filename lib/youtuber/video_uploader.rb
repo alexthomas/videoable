@@ -115,5 +115,8 @@ module Youtuber
       Rails.logger.debug "trying to delete video from vimeo #{video.id}"
       vapi = Youtuber::Apis::Vimeo::Video.new
       vapi.delete video.video_id
+      rescue
+      ensure
+      video
     end
 end

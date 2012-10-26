@@ -14,10 +14,10 @@ module Youtuber
         attr_reader :ticket_id
         
         after_save :upload_video, :if => lambda {|video| !video.video_url? && video.attached_video}
+        after_destroy :delete_video
         
         before_validation :generate_video_from_remote, :if => :video_url?
         validates_presence_of :remote_video, :if => :video_url?, :message => 'video url is invalid or inaccessible'
-        validates_presence_of :video_url, :if => lambda {|video| video.attached_video.blank?}, :message => 'you must either upload a video give a video URL'
         validates_presence_of :attached_video, :if => lambda {|video| video.video_url.blank?}, :message => 'you must either upload a video give a video URL'
       end
       
@@ -35,7 +35,11 @@ module Youtuber
         FileUtils.mkdir_p(directory) unless File.exists?(directory)
         path = File.join(directory, name)
         File.open(path, "wb") { |f| f.write(self.attached_video.read) }
-        Resque.enqueue(VideoUploader,self.id,path)
+        Resque.enqueue(VideoUploader,self.id,path,'upload')
+      end
+      
+      def delete_video
+        Resque.enqueue(VideoUploader,self.id,'','delete')
       end
       
       def generate_video_from_remote
@@ -84,18 +88,32 @@ module Youtuber
         video_id = (url =~ VID_REGEXP && $1) ? $1 : $2
       end
       
-      def self.perform video_id,uploadable_path
-        Rails.logger.debug "performing upload resque job for video #{video_id}"
-        Rails.logger.debug "uploadble path in perform is #{uploadable_path}"
-        video = Video.find video_id
-        uploader = Uploader.new
-        remote_video_id = uploader.upload uploadable_path, false
-        Rails.logger.debug "remote video id #{remote_video_id}"
-        vapi = Youtuber::Apis::Vimeo::Video.new
-        video.populate_video_fields_from_remote remote_video_id,video.video_type
-        vapi.set_title(remote_video_id, video.title) if !video.title.blank?
-        vapi.set_description(remote_video_id, video.description) if !video.description.blank?
+      def self.perform video_id,uploadable_path,action
+        video = (action=='upload') ? self.upload_video : self.delete_video
         video.save if video.changed?
       end
+    end
+    
+    def self.upload_video video_id,uploadable_path
+      Rails.logger.debug "performing upload resque job for video #{video_id}"
+      Rails.logger.debug "uploadble path in perform is #{uploadable_path}"
+      video = Video.find video_id
+      uploader = Uploader.new
+      remote_video_id = uploader.upload uploadable_path, false
+      Rails.logger.debug "remote video id #{remote_video_id}"
+      vapi = Youtuber::Apis::Vimeo::Video.new
+      video.populate_video_fields_from_remote remote_video_id,video.video_type
+      vapi.set_title(remote_video_id, video.title) if !video.title.blank?
+      vapi.set_description(remote_video_id, video.description) if !video.description.blank?
+      video
+    end
+    
+    #use try instead of find?
+    def self.delete_video
+      
+      video = Video.find video_id
+      Rails.logger.debug "trying to delete video from vimeo #{video.id}"
+      vapi = Youtuber::Apis::Vimeo::Video.new
+      vapi.delete video.video_id
     end
 end

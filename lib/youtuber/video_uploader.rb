@@ -17,6 +17,8 @@ module Youtuber
         
         before_validation :generate_video_from_remote, :if => :video_url?
         validates_presence_of :remote_video, :if => :video_url?, :message => 'video url is invalid or inaccessible'
+        validates_presence_of :video_url, :if => lambda {|video| video.attached_video.blank?}, :message => 'you must either upload a video give a video URL'
+        validates_presence_of :attached_video, :if => lambda {|video| video.video_url.blank?}, :message => 'you must either upload a video give a video URL'
       end
       
       

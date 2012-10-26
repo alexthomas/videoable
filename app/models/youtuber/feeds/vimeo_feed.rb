@@ -15,21 +15,6 @@ module Youtuber
           'page' => @page
         }
       end
-      
-      protected
-        
-       def self.authenticated_access? params
-          params.is_a?(Hash) && (!params[:atoken].nil? && !params[:asecret].nil?) ? true : false
-       end
-      
-        
-       def self.set_vapi params
-         @@vapi = Youtuber::Feeds::VimeoFeed.authenticated_access?(params) ? Youtuber::Apis::Vimeo::Video.new(Youtuber.authenticate_params('vimeo', params)) : nil
-       end
-       
-       def self.have_vapi?
-         @@vapi.nil?
-       end
        
       private 
         def self.determine_feed_type(params)

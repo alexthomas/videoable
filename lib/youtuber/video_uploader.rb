@@ -6,7 +6,7 @@ module Youtuber
       included do
         
         class << self
-          @@vapi = Youtuber::Apis::Vimeo::Video.new
+          @@api = Youtuber::Apis::Vimeo::Video.new
         end
         
         YOUTUBE_REGEXP  = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(youtu\.be\/|youtube\.com)/
@@ -22,7 +22,7 @@ module Youtuber
         
         before_validation :generate_video_from_remote, :if => :video_url?
         validates_presence_of :remote_video, :if => :video_url?, :message => 'video url is invalid or inaccessible'
-        validates_presence_of :attached_video, :if => lambda {|video| video.video_url.blank?}, :message => 'you must either upload a video give a video URL'
+        validates_presence_of :attached_video, :if => lambda {|video| video.video_url.blank? && video.video_id.nil?}, :message => 'you must either upload a video give a video URL'
       end
       
       
@@ -68,7 +68,7 @@ module Youtuber
           Rails.logger.debug "setting video instance variables"
           self.video_id = video.video_id
           self.title = video.title unless video.title == 'Untitled'
-          self.description = video.description unless video.desciption.blank?
+          self.description = video.description unless video.description.blank?
           self.ytid = video.ytid
           self.duration = video.duration
           self.player_url = video.player_url
@@ -93,7 +93,7 @@ module Youtuber
       end
       
       def self.perform video_id,uploadable_path,action
-        video = (action=='upload') ? self.upload_video(video_id,uploadable_path) : self.delete_video(video_id)
+        (action=='upload') ? self.upload_video(video_id,uploadable_path) : self.delete_video(video_id)
       end
       
       #add in ability to check if video successfully uploaded or not - if not then delete video
@@ -109,20 +109,22 @@ module Youtuber
         Rails.logger.debug "remote video id #{remote_video_id}"
 
         video.populate_video_fields_from_remote remote_video_id,video.video_type
-        response = @@vapi.set_title(remote_video_id, video.title) if !video.title.blank?
+        Rails.logger.debug "video after populating fields is #{video.inspect}"
+        response = @@api.set_title(remote_video_id, video.title) if !video.title.blank?
         Rails.logger.debug "response from vapi set title #{response.inspect}"
-        response = @@vapi.set_description(remote_video_id, video.description) if !video.description.blank?
+        response = @@api.set_description(remote_video_id, video.description) if !video.description.blank?
         Rails.logger.debug "response from vapi set description #{response.inspect}"
-        Rails.logger.debug "video is #{video.inspect}"
-        video.save if video.changed?
         rescue
+        ensure
+        video.save if video.changed?
+        
       end
 
       #use try instead of find?
       def self.delete_video video_id
         video = Video.find video_id
         Rails.logger.debug "trying to delete video from vimeo #{video.id}"
-        @@vapi.delete video.video_id
+        @@api.delete video.video_id
         rescue
       end
       

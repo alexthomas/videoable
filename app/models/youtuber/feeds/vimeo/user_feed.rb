@@ -10,10 +10,8 @@ module Youtuber
       
         def initialize(params,options = {})
           super params
-          
-          params = Youtuber.authenticate_params 'vimeo', params
-          @@vapi = VideoFeed.set_vapi params
-          if @@vapi.nil?
+          @@api = VideoFeed.set_api params,'vimeo','video'
+          if @@api.nil?
             @url = base_url
             @page ||= 1
             @request ||= 'videos'
@@ -47,7 +45,7 @@ module Youtuber
         def self.advanced_parse user,page,items_per_page
           Rails.logger.debug "we are doing an advanced parse"
           fp = Youtuber::Parser::VimeoParser.new
-          response = @@vapi.get_all(user, :page => page, :per_page => items_per_page)
+          response = @@api.get_all(user, :page => page, :per_page => items_per_page)
           fp.content = response['videos']['video']
           #Rails.logger.debug "content returned from authenticated call: #{response}"
           #Rails.logger.debug "videos returned from authenticated call: #{fp.content}"
@@ -59,7 +57,7 @@ module Youtuber
         
         def self.perform(user,url,page,items_per_page)
             videos = []
-            fp = (@@vapi.nil?) ? self.simple_parse(url) : self.advanced_parse(user,page,items_per_page)
+            fp = (@@api.nil?) ? self.simple_parse(url) : self.advanced_parse(user,page,items_per_page)
             
             fp.parse(fp) do | parser |
               parser.response.entries.each do | entry |

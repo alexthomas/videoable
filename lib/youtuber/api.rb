@@ -7,6 +7,8 @@ module Youtuber
     include Youtuber::Oauth
     
     def initialize params = {}
+        @api_type             = params[:api_type] || "vimeo"
+        params = Youtuber.authenticate_params @api_type, params
         @consumer_key         = params[:consumer_key]
         @consumer_secret      = params[:consumer_secret]
         @user                 = params[:username]
@@ -27,9 +29,17 @@ module Youtuber
         end
     end
     
-    def make_request(options, authorized)
-      if authorized
-        Rails.logger.debug "unauthorized api endpoing: #{@api_endpoint}"
+    def authenticated_access?
+        !@access_token.nil?
+     end
+      
+     def self.set_api params, api_type, api_endpoint
+       @@api = self.authenticated_access?(params) ? "Youtuber::Apis::#{api_type.capitalize}::#{api_endpoint.capitalize}".constantize.new(params) : nil
+     end
+     
+    def make_request(options, require_auth)
+      if require_auth
+        Rails.logger.debug "api call requires authorisation: #{@api_endpoint}"
         raw_response = consumer.request(:post, @api_endpoint, get_access_token, {}, options).body
       else
         Rails.logger.debug "authorized api endpoing: #{@api_endpoint}"

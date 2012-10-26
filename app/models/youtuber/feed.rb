@@ -37,6 +37,15 @@ module Youtuber
         feed_type = 'user' if params[:user]
         feed_type << '_feed' 
       end
+
+       def self.set_api params, api_type, api_endpoint
+         api = "Youtuber::Apis::#{api_type.capitalize}::#{api_endpoint.capitalize}".constantize.new(params)
+         @@api = api.authenticated_access? ? api : nil
+       end
+       
+       def self.have_api?
+         @@api.nil?
+       end
       
     private
       def self.determine_video_source(params)

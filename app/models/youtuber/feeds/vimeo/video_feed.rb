@@ -9,10 +9,10 @@ module Youtuber
         def initialize(params,options = {})
           @vid = nil
           super params
-          params = Youtuber.authenticate_params 'vimeo', params
+          
           Rails.logger.debug "vid is: #{@vid}"
-          @@vapi = VideoFeed.set_vapi params
-          @url = base_url << "#{@vid}.json" if @@vapi.nil?
+          @@api = VideoFeed.set_api params, 'vimeo', 'video'
+          @url = base_url << "#{@vid}.json" if @@api.nil?
           Rails.logger.debug "feed url: #{@url}"
         
         
@@ -33,7 +33,7 @@ module Youtuber
         def self.advanced_parse vid
           Rails.logger.debug "we are doing an advanced parse with a vid of #{vid}"
           fp = Youtuber::Parser::VimeoParser.new
-          response = @@vapi.get_info vid
+          response = @@api.get_info vid
           Rails.logger.debug "content returned from authenticated call: #{response}"
           fp.content = response['video']
           
@@ -43,7 +43,7 @@ module Youtuber
         
         def self.parse_feed url,vid,save = false
           video = false
-          fp = (@@vapi.nil?) ? Youtuber::Parser::VimeoParser.new(url) : self.advanced_parse(vid)
+          fp = (@@api.nil?) ? Youtuber::Parser::VimeoParser.new(url) : self.advanced_parse(vid)
           fp.parse(fp) do | parser |
             parser.response.entries.each do | entry |
               video = parser.parse_video(entry)

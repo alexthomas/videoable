@@ -49,5 +49,10 @@ module Youtuber
       EMBED
     end
     
+    def video_url
+      watch = (video_type=="youtube") ? "watch?v=#{video_id}" : video_id
+      "http://#{video_type}.com/#{watch}"
+    end
+    
   end
 end

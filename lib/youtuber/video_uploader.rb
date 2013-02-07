@@ -9,14 +9,14 @@ module Youtuber
         VIMEO_REGEXP    = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(vimeo.com)/
         VID_REGEXP      = /^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)[?=&+%\w-]*|^(?:https?:\/\/)?(?:[0-9A-Za-z]+\.)?(?:vimeo.com\/)(?:video\/)?(\w+)$/ix
 
-        attr_accessor   :video_url,:attached_video,:remote_video
-        attr_accessible :video_url,:attached_video
+        attr_accessor   :attached_video,:remote_video
+        attr_accessible :remote_video_url
         attr_reader :ticket_id
         
         after_save :upload_video, :if => lambda {|video| !video.video_url? && video.attached_video}
         
-        before_validation :generate_video_from_remote, :if => :video_url?
-        validates_presence_of :remote_video, :if => :video_url?, :message => 'video url is invalid or inaccessible'
+        before_validation :generate_video_from_remote, :if => :remote_video_url?
+        validates_presence_of :remote_video, :if => :remote_video_url?, :message => 'video url is invalid or inaccessible'
       end
       
       
@@ -47,7 +47,7 @@ module Youtuber
           #generate remote feed for single video
           self.remote_video = true if !video_id.nil?
         end
-        rescue #rescue a failed grabbing of remote feed
+      rescue #rescue a failed grabbing of remote feed
       end
      
       def populate_video_fields_from_remote vid,service
@@ -73,8 +73,8 @@ module Youtuber
       end
       
       def get_video_type url
-        return 'youtube' if url =~ YOUTUBE_REGEXP
-        return 'vimeo' if url =~ VIMEO_REGEXP
+        return 'youtube' if !(url =~ YOUTUBE_REGEXP).nil?
+        return 'vimeo' if !(url =~ VIMEO_REGEXP).nil?
         false
       end
       

@@ -34,7 +34,10 @@ module Youtuber
     end
     
     def embed_video(width = 425, height = 350)
-      method("#{video_type}_embed_html").call(width,height)
+      return nil if video_type.nil?
+      embed_html = method("#{video_type}_embed_html").call(width,height).strip
+      rescue
+      embed_html ||= nil
     end
     
     def youtube_embed_html(width = 425, height = 350)
@@ -50,9 +53,10 @@ module Youtuber
     end
     
     def video_url
-      watch = (video_type=="youtube") ? "watch?v=#{video_id}" : video_id
-      "http://#{video_type}.com/#{watch}"
+      return nil if (video_id.nil? || video_type.nil?)
+      watch = (video_type=="youtube") ? "watch?v=#{video_id}": video_id
+      "#{video_type}.com/#{watch}"
     end
-    
+
   end
 end

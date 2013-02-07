@@ -5,7 +5,7 @@ module Youtuber
       included do
                               
         has_many :videos, :as => :videoable, :class_name => "Youtuber::Video"
-        accepts_nested_attributes_for :videos
+        accepts_nested_attributes_for :videos, :reject_if => :all_blank, :allow_destroy => true
         attr_accessible :videos_attributes
         
       end

@@ -13,7 +13,7 @@ module Youtuber
         attr_accessible :remote_video_url
         attr_reader :ticket_id
         
-        after_save :upload_video, :if => lambda {|video| !video.video_url? && video.attached_video}
+        after_save :upload_video, :if => lambda {|video| !video.remote_video_url? && video.attached_video}
         
         before_validation :generate_video_from_remote, :if => :remote_video_url?
         validates_presence_of :remote_video, :if => :remote_video_url?, :message => 'video url is invalid or inaccessible'
@@ -21,7 +21,7 @@ module Youtuber
       
       
       
-      def video_url?
+      def remote_video_url?
         !self.video_url.blank?
       end
 
@@ -37,12 +37,12 @@ module Youtuber
       end
       
       def generate_video_from_remote
-        Rails.logger.debug "generating remote video"
+        Rails.logger.debug "generating remote video from #{remote_video_url}"
         #determine if youtube or vimeo
-        self.video_type = get_video_type video_url
+        self.video_type = get_video_type remote_video_url
        
         if video_type
-          self.video_id = get_video_id video_url
+          self.video_id = get_video_id remote_video_url
           Rails.logger.debug "video id #{video_id}"
           #generate remote feed for single video
           self.remote_video = true if !video_id.nil?

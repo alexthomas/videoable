@@ -11,7 +11,7 @@ module Videoable
       end
       
       module ClassMethods
-        Videoable::Models.config(self)
+        #Videoable::Models.config(self)
       end
       
     end

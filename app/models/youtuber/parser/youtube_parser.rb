@@ -71,6 +71,7 @@ module Youtuber
         
           :title          => title,
           :description    => description,
+          :thumbnail_url  => "http://img.youtube.com/vi/#{ytid}/0.jpg",
           :duration       => duration,
           :player_url     => player_url,
           :widescreen     => widescreen,

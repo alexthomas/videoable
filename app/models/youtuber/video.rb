@@ -7,7 +7,7 @@ module Youtuber
                           
     belongs_to :videoable, :polymorphic => true
     
-    attr_accessible :video_id, :title, :ytid, :description, :duration, :player_url, 
+    attr_accessible :video_id, :title, :ytid, :description, :thumbnail_url, :duration, :player_url, 
                       :widescreen, :noembed, :state,:is_private,:published_at,:uploaded_at,
                         :updated_at,:video_type,:remote_video_url,:videoable_id,:videoable_type
                            
@@ -60,8 +60,13 @@ module Youtuber
     
     def embed_url
       return nil if (video_id.nil? || video_type.nil?)
-      embed_url = "http://"
-      embed_url << (video_type=="youtube") ? "www.youtube.com/embed/#{video_id}" : "player.vimeo.com/video/#{video_id}"
+      embed_url = (video_type=="youtube") ? "www.youtube.com/embed/#{video_id}" : "player.vimeo.com/video/#{video_id}"
+      "http://" << embed_url
+    end
+    
+    def thumbnail
+      thumbnail = @self.thumbnail_url.nil? ? "/assets/video-placeholder.jpg" : @self.thumbnail_url
+      thumbnail
     end
   end
 end

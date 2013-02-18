@@ -28,7 +28,7 @@ module Youtuber
       
       
       def remote_video_url?
-        !self.video_url.blank?
+        !self.remote_video_url.blank?
       end
 
       def upload_video
@@ -55,9 +55,13 @@ module Youtuber
           self.video_id = get_video_id remote_video_url
           Rails.logger.debug "video id #{video_id}"
           #generate remote feed for single video
-          self.remote_video = true if !video_id.nil?
+          if !video_id.nil?
+            self.remote_video = true
+            populate_video_fields_from_remote video_id, video_type
+          end
+            
         end
-      rescue #rescue a failed grabbing of remote feed
+      #rescue #rescue a failed grabbing of remote feed
       end
      
       def populate_video_fields_from_remote vid,service
@@ -69,6 +73,7 @@ module Youtuber
           self.video_id = video.video_id
           self.title = video.title unless video.title == 'Untitled'
           self.description = video.description unless video.description.blank?
+          self.thumbnail_url = video.thumbnail_url
           self.ytid = video.ytid
           self.duration = video.duration
           self.player_url = video.player_url

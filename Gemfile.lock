@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    youtuber (0.0.1)
+    videoable (0.0.1)
       httparty (>= 0.4.5)
       httpclient (>= 2.1.5.2)
       jquery-rails
@@ -126,4 +126,4 @@ PLATFORMS
 
 DEPENDENCIES
   sqlite3
-  youtuber!
+  videoable!

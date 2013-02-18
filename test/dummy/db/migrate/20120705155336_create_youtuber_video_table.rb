@@ -1,4 +1,4 @@
-class CreateYoutuberVideoTable < ActiveRecord::Migration
+class CreateVideoableVideoTable < ActiveRecord::Migration
   def change
     create_table :yt_videos do |t|
       t.string :video_id

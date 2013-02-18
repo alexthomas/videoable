@@ -1,0 +1,3 @@
+namespace :videoable do
+ 
+end

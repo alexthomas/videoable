@@ -1,7 +1,7 @@
 require 'test_helper'
 
-class YoutuberTest < ActiveSupport::TestCase
+class VideoableTest < ActiveSupport::TestCase
   test "truth" do
-    assert_kind_of Module, Youtuber
+    assert_kind_of Module, Videoable
   end
 end

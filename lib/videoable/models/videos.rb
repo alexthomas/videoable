@@ -1,6 +1,6 @@
 module Videoable
   module Models
-    module Videoable
+    module Videos
       extend ActiveSupport::Concern
       included do
                               

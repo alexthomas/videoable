@@ -1,5 +1,5 @@
 class Video < ActiveRecord::Base
   
-  youtuber :videoable
+  videoable :videoable
   
 end

@@ -57,6 +57,11 @@ module Youtuber
       watch = (video_type=="youtube") ? "watch?v=#{video_id}": video_id
       "#{video_type}.com/#{watch}"
     end
-
+    
+    def embed_url
+      return nil if (video_id.nil? || video_type.nil?)
+      embed_url = "http://"
+      embed_url << (video_type=="youtube") ? "www.youtube.com/embed/#{video_id}" : "player.vimeo.com/video/#{video_id}"
+    end
   end
 end

@@ -65,7 +65,7 @@ module Videoable
     end
     
     def thumbnail
-      thumbnail = @self.thumbnail_url.nil? ? "/assets/video-placeholder.jpg" : @self.thumbnail_url
+      thumbnail = self.thumbnail_url.nil? ? "/assets/video-placeholder.jpg" : self.thumbnail_url
       thumbnail
     end
   end

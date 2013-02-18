@@ -34,12 +34,13 @@ module Videoable
       
       logger.debug "in videoable options are #{options.inspect} modules are #{modules} #{__LINE__}"
       selected_modules = modules.map(&:to_sym).uniq
+      logger.debug "selected modules are #{selected_modules.inspect}"
       #selected_modules = modules.map(&:to_sym).uniq.sort_by do |s|
       #  Videoable::ALL.index(s) || -1  # follow Videoable::ALL order
       #end
 
       videoable_modules_hook! do
-        
+        logger.debug "hooking in"
         selected_modules.each do |m|
           mod = Videoable::Models.const_get(m.to_s.classify)
           logger.debug "model in Models is #{mod.inspect}"

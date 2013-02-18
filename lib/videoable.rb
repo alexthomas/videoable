@@ -46,7 +46,7 @@ end
 #Require our engine
 require "videoable/engine"
 require "videoable/models"
-require "videoable/models/videoable"
+require "videoable/models/attached_video"
 require "videoable/feeds"
 require "videoable/oauth"
 require "videoable/api"

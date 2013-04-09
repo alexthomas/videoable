@@ -16,8 +16,8 @@ module Videoable
     end
     
     def self.ytid_from_video_id video_id
-      logger.debug "video id is: #{video_id}"
-      logger.debug "unique id is: #{video_id[/videos\/([^<]+)/, 1]}"
+     #logger.debug "video id is: #{video_id}"
+     #logger.debug "unique id is: #{video_id[/videos\/([^<]+)/, 1]}"
       video_id[/videos\/([^<]+)/, 1] || video_id[/video\:([^<]+)/, 1]
     end
 
